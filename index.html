@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNLook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0 10px; /* Уменьшенный отступ снизу */
+            background-color: #333;
+        }
+
+        h1 {
+            margin: 0 0 10px; /* Добавил отступ вниз */
+            font-size: 28px;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 80%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #searchBar {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .clear-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #555;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+
+        .clear-btn:hover {
+            background-color: #555;
+        }
+
+        #skinContainer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px auto;
+            padding: 10px;
+            max-width: 1200px;
+        }
+
+        .skinItem {
+            background-color: #444;
+            border-radius: 8px;
+            text-align: center;
+            width: 160px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .skinItem:hover {
+            transform: scale(1.05);
+        }
+
+        .skinItem img {
+            width: 100%;
+            aspect-ratio: 4 / 5;
+            object-fit: cover;
+        }
+
+        .skinName {
+            padding: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .skinDays {
+            font-size: 12px;
+            color: #ccc;
+            padding-bottom: 4px;
+        }
+
+        .skinDate {
+            font-size: 12px;
+            color: #aaa;
+            padding-bottom: 4px;
+        }
+
+        .no-results {
+            text-align: center;
+            font-size: 18px;
+            color: #ccc;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>FNLook</h1>
+        <div class="search-container">
+            <input type="text" id="searchBar" placeholder="Введите название скина">
+            <button class="clear-btn" id="clearBtn">✖</button>
+        </div>
+    </header>
+
+    <div id="skinContainer">
+        <!-- Скины будут добавлены динамически через JS -->
+    </div>
+    <div class="no-results" id="noResults" style="display: none;">
+        Ничего не найдено 🔍
+    </div>
+
+    <script>
+        // Массив с данными о скинах
+        const skins = [
+            { name: "Саботажница", image: "https://i.postimg.cc/NMbk29vr/image.png", date: "2020-05-27" },
+            { name: "Travis Scott", image: "https://i.postimg.cc/JnBk3PgJ/image.png", date: "2020-04-27" },
+            { name: "Astro Jack", image: "https://i.postimg.cc/tJ3nw794/image.png", date: "2020-04-27" },
+            { name: "Инстинкт", image: "https://i.postimg.cc/nz7X9MjG/image.png", date: "2019-03-04" },
+            { name: "Чемпионка", image: "https://i.postimg.cc/C5sdJt4Z/image.png", date: "2019-07-28" },
+            { name: "Шаман", image: "https://i.postimg.cc/VsqSYrcY/image.png", date: "2019-12-02" },
+            { name: "Радужный Друг", image: "https://via.placeholder.com/150", date: "2024-01-15" }
+        ];
+
+        const skinContainer = document.getElementById("skinContainer");
+        const searchBar = document.getElementById("searchBar");
+        const clearBtn = document.getElementById("clearBtn");
+        const noResults = document.getElementById("noResults");
+
+        // Функция подсчёта дней с указанной даты
+        function calculateDays(dateString) {
+            const startDate = new Date(dateString);
+            const today = new Date();
+            const difference = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+            return difference >= 0 ? difference : 0;
+        }
+
+        // Функция форматирования даты на русский
+        function formatDateToRussian(dateString) {
+            const months = [
+                "января", "февраля", "марта", "апреля", "мая", "июня",
+                "июля", "августа", "сентября", "октября", "ноября", "декабря"
+            ];
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            return `${day} ${month} ${year}`;
+        }
+
+        // Функция отображения скинов
+        function displaySkins(filter = "") {
+            skinContainer.innerHTML = ""; // Очищаем контейнер
+            const filteredSkins = skins.filter(skin =>
+                skin.name.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            // Сортировка по количеству дней (от большего к меньшему)
+            filteredSkins.sort((a, b) => calculateDays(b.date) - calculateDays(a.date));
+
+            if (filteredSkins.length === 0) {
+                noResults.style.display = "block";
+            } else {
+                noResults.style.display = "none";
+            }
+
+            filteredSkins.forEach(skin => {
+                const skinDiv = document.createElement("div");
+                const days = calculateDays(skin.date);
+                const formattedDate = formatDateToRussian(skin.date);
+                skinDiv.className = "skinItem";
+                skinDiv.innerHTML = `
+                    <img src="${skin.image}" alt="${skin.name}">
+                    <div class="skinName">${skin.name}</div>
+                    <div class="skinDate">📅 ${formattedDate}</div>
+                    <div class="skinDays">🕛 ${days} дней</div>
+                `;
+                skinContainer.appendChild(skinDiv);
+            });
+        }
+
+        // Обновляем скины при вводе в поисковую строку
+        searchBar.addEventListener("input", (e) => {
+            const searchText = e.target.value;
+            displaySkins(searchText);
+        });
+
+        // Кнопка очистки строки поиска
+        clearBtn.addEventListener("click", () => {
+            searchBar.value = "";
+            displaySkins();
+        });
+
+        // Изначальное отображение всех скинов
+        displaySkins();
+    </script>
+</body>
+</html>
